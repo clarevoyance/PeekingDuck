@@ -1,11 +1,11 @@
-# Copyright 2021 AI Singapore
-
+# Copyright 2022 AI Singapore
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-
+#
 #     https://www.apache.org/licenses/LICENSE-2.0
-
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -36,19 +36,19 @@ class Node(AbstractNode):
     """Outputs the processed image or video to a file.
 
     Inputs:
-        |img|
+        |img_data|
 
-        |filename|
+        |filename_data|
 
-        |saved_video_fps|
+        |saved_video_fps_data|
 
-        |pipeline_end|
+        |pipeline_end_data|
 
     Outputs:
-        |none|
+        |none_output_data|
 
     Configs:
-        output_dir (:obj:`str`): **default = 'PeekingDuck/data/output'**. |br|
+        output_dir (:obj:`str`): **default = "PeekingDuck/data/output"**. |br|
             Output directory for files to be written locally.
     """
 

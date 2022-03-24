@@ -1,4 +1,4 @@
-# Copyright 2021 AI Singapore
+# Copyright 2022 AI Singapore
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -32,10 +32,10 @@ class Node(AbstractNode):
     FPS. A preferred output setting can be set via the configuration file.
 
     Inputs:
-        |pipeline_end|
+        |pipeline_end_data|
 
     Outputs:
-        |fps|
+        |fps_data|
 
     Configs:
         fps_log_display (:obj:`bool`): **default = False**. |br|

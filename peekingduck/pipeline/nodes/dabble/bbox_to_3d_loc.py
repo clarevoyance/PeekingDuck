@@ -1,4 +1,4 @@
-# Copyright 2021 AI Singapore
+# Copyright 2022 AI Singapore
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -27,10 +27,10 @@ class Node(AbstractNode):
     """Uses 2D bounding boxes information to estimate 3D location.
 
     Inputs:
-        |bboxes|
+        |bboxes_data|
 
     Outputs:
-        |obj_3D_locs|
+        |obj_3D_locs_data|
 
     Configs:
         focal_length (:obj:`float`): **default = 1.14**. |br|

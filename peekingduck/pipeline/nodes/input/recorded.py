@@ -1,4 +1,4 @@
-# Copyright 2021 AI Singapore
+# Copyright 2022 AI Singapore
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,10 +20,7 @@ from pathlib import Path
 from typing import Any, Dict
 
 from peekingduck.pipeline.nodes.input.utils.preprocess import resize_image
-from peekingduck.pipeline.nodes.input.utils.read import (
-    VideoThread,
-    VideoNoThread,
-)
+from peekingduck.pipeline.nodes.input.utils.read import VideoNoThread, VideoThread
 from peekingduck.pipeline.nodes.node import AbstractNode
 
 
@@ -32,16 +29,16 @@ class Node(AbstractNode):
     """Receives videos/image as inputs.
 
     Inputs:
-        |none|
+        |none_input_data|
 
     Outputs:
-        |img|
+        |img_data|
 
-        |pipeline_end|
+        |pipeline_end_data|
 
-        |filename|
+        |filename_data|
 
-        |saved_video_fps|
+        |saved_video_fps_data|
 
     Configs:
         resize (:obj:`Dict`):
@@ -56,9 +53,10 @@ class Node(AbstractNode):
             The FPS may increase if this is enabled (system dependent).
         buffer_frames (:obj:`bool`): **default = False**. |br|
             Boolean to indicate if threaded class should buffer image frames.
-            If threading is True, it is highly recommended that buffer_frames is
-            also True to avoid losing frames, as otherwise the input thread would
-            very likely read ahead of the main thread. |br|
+            If ``threading`` is ``True``, it is highly recommended that
+            ``buffer_frames`` is also ``True`` to avoid losing frames, as
+            otherwise the input thread would very likely read ahead of the main
+            thread. |br|
             For more info, please refer to `input.recorded configuration
             <https://github.com/aimakerspace/PeekingDuck/blob/dev/peekingduck/configs/input/recorded.yml>`_.
     """

@@ -1,4 +1,4 @@
-# Copyright 2021 AI Singapore
+# Copyright 2022 AI Singapore
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,26 +23,26 @@ from peekingduck.pipeline.nodes.node import AbstractNode
 
 
 class Node(AbstractNode):
-    """Initialises and use the MTCNN model to infer bboxes from image frame.
+    """Initializes and uses the MTCNN model to infer bboxes from image frame.
 
     The MTCNN node is a single-class model capable of detecting human faces. To
     a certain extent, it is also capable of detecting bounding boxes around
     faces with face masks (e.g. surgical masks).
 
     Inputs:
-        |img|
+        |img_data|
 
     Outputs:
-        |bboxes|
+        |bboxes_data|
 
-        |bbox_scores|
+        |bbox_scores_data|
 
-        |bbox_labels|
+        |bbox_labels_data|
 
     Configs:
         weights_parent_dir (:obj:`Optional[str]`): **default = null**. |br|
-            Change the parent directory where weights will be stored by replacing
-            ``null`` with an absolute path to the desired directory.
+            Change the parent directory where weights will be stored by
+            replacing ``null`` with an absolute path to the desired directory.
         mtcnn_min_size (:obj:`int`): **default = 40**. |br|
             Minimum height and width of face in pixels to be detected.
         mtcnn_factor (:obj:`float`): **[0, 1], default = 0.709**. |br|

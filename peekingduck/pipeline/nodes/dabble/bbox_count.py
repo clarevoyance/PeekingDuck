@@ -1,4 +1,4 @@
-# Copyright 2021 AI Singapore
+# Copyright 2022 AI Singapore
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,10 +25,10 @@ class Node(AbstractNode):
     """Counts total number of detected objects.
 
     Inputs:
-        |bboxes|
+        |bboxes_data|
 
     Outputs:
-        |count|
+        |count_data|
 
     Configs:
         None.

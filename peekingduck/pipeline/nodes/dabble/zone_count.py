@@ -1,4 +1,4 @@
-# Copyright 2021 AI Singapore
+# Copyright 2022 AI Singapore
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -32,12 +32,12 @@ class Node(AbstractNode):
     such as the type of object to detect.
 
     Inputs:
-        |btm_midpoint|
+        |btm_midpoint_data|
 
     Outputs:
-        |zones|
+        |zones_data|
 
-        |zone_count|
+        |zone_count_data|
 
     Configs:
         resolution (:obj:`List[int]`): **default = [1280, 720]**. |br|

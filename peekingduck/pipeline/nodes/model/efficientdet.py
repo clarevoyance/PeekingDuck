@@ -1,4 +1,4 @@
-# Copyright 2021 AI Singapore
+# Copyright 2022 AI Singapore
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,12 +18,13 @@ Slower but more accurate object detection model.
 
 from typing import Any, Dict
 
+import cv2
 from peekingduck.pipeline.nodes.model.efficientdet_d04 import efficientdet_model
 from peekingduck.pipeline.nodes.node import AbstractNode
 
 
 class Node(AbstractNode):
-    """Initialises an EfficientDet model to detect bounding boxes from an image.
+    """Initializes an EfficientDet model to detect bounding boxes from an image.
 
     The EfficientDet node is capable of detecting objects from 80 categories.
     The table of categories can be found
@@ -36,14 +37,14 @@ class Node(AbstractNode):
     changed to other values.
 
     Inputs:
-        |img|
+        |img_data|
 
     Outputs:
-        |bboxes|
+        |bboxes_data|
 
-        |bbox_labels|
+        |bbox_labels_data|
 
-        |bbox_scores|
+        |bbox_scores_data|
 
     Configs:
         model_type (:obj:`int`): **{0, 1, 2, 3, 4}, default = 0**. |br|
@@ -51,10 +52,11 @@ class Node(AbstractNode):
         score_threshold (:obj:`float`): **[0, 1], default = 0.3**.
             Threshold to determine if detection should be returned.
         detect_ids (:obj:`List[int]`): **default = [0]**. |br|
-            List of object class IDs to be detected.
+            List of object class IDs to be detected. To detect all classes,
+            refer to the :ref:`tech note <general-object-detection-ids>`.
         weights_parent_dir (:obj:`Optional[str]`): **default = null**. |br|
-            Change the parent directory where weights will be stored by replacing
-            ``null`` with an absolute path to the desired directory.
+            Change the parent directory where weights will be stored by
+            replacing ``null`` with an absolute path to the desired directory.
 
     References:
         EfficientDet: Scalable and Efficient Object Detection:
@@ -71,8 +73,9 @@ class Node(AbstractNode):
         """Takes an image as input and returns bboxes of objects specified
         in config.
         """
-        # Currently prototyped to return just the bounding boxes
-        # without the scores
-        bboxes, labels, scores = self.model.predict(inputs["img"])
+
+        img_rgb = cv2.cvtColor(inputs["img"], cv2.COLOR_BGR2RGB)
+
+        bboxes, labels, scores = self.model.predict(img_rgb)
         outputs = {"bboxes": bboxes, "bbox_labels": labels, "bbox_scores": scores}
         return outputs

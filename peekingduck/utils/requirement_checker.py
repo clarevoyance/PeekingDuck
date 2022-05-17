@@ -1,4 +1,4 @@
-# Copyright 2021 AI Singapore
+# Copyright 2022 AI Singapore
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -84,8 +84,7 @@ def check_requirements(
                 pkg.require(req.name)
             except (pkg.DistributionNotFound, pkg.VersionConflict):
                 logger.info(
-                    "%s not found and is required, attempting auto-update...",
-                    req.name,
+                    f"{req.name} not found and is required, attempting auto-update..."
                 )
                 try:
                     logger.info(
@@ -97,23 +96,11 @@ def check_requirements(
                     raise
         else:
             logger.warning(
-                (
-                    "The %s node requires %s which needs to be "
-                    "manually installed. Please follow the instructions "
-                    "at %s and rerun. Ignore this warning if the "
-                    "package is already installed"
-                ),
-                identifier,
-                req.name.strip(),
-                "https://peekingduck.readthedocs.io/en/stable/peekingduck.pipeline.nodes.html",
+                f"The {identifier} node requires {req.name.strip()} which needs to be "
+                "manually installed. Please follow the instructions at "
+                "https://peekingduck.readthedocs.io/en/stable/master.html#api-documentation "
+                "and rerun. Ignore this warning if the package is already installed"
             )
-
-    if n_update > 0:
-        logger.warning(
-            "%d package%s updated. Please rerun for the updates to take effect.",
-            n_update,
-            "s" * int(n_update > 1),
-        )
 
     return n_update
 
@@ -131,7 +118,7 @@ def _parse_requirements(file: TextIO, identifier: str) -> Iterator[OptionalRequi
 
     Returns:
         (Iterator[OptionalRequirements]): Optional requirements, both Python
-            and system packages, speficified under the unique identifier.
+            and system packages, specified under the unique identifier.
     """
     lines = iter(_yield_lines(file, identifier))
     for line in lines:

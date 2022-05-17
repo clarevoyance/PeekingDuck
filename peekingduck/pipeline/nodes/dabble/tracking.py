@@ -1,4 +1,4 @@
-# Copyright 2021 AI Singapore
+# Copyright 2022 AI Singapore
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,45 +12,77 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Performs multiple object tracking for detected bboxes
-"""
+"""🎯 Performs multiple object tracking for detected bboxes."""
 
-from typing import Dict, Any
+from typing import Any, Dict
+
+from peekingduck.pipeline.nodes.dabble.trackingv1.detection_tracker import (
+    DetectionTracker,
+)
 from peekingduck.pipeline.nodes.node import AbstractNode
-from .utils.load_tracker import LoadTracker
 
 
 class Node(AbstractNode):
-    """Node that uses bounding boxes detected by an object detector model
-    to track multiple objects.
+    """Uses bounding boxes detected by an object detector model to track
+    multiple objects. :mod:`dabble.tracking` is a useful alternative to
+    :mod:`model.fairmot` and :mod:`model.jde` as it can track bounding boxes
+    detected by the upstream object detector and is not limited to only
+    ``"person"`` detections.
 
-    There are types of trackers that can be selected; MOSSE, IOU.
-    Please view each tracker's script, or the multi object
-    tracking use case documentation for more details.
+    Currently, two types of tracking algorithms can be selected: MOSSE and IOU.
+    Information on the algorithms' performance can be found
+    :ref:`here <object-tracking-benchmarks>`.
 
     Inputs:
-        |bboxes|
+        |img_data|
 
-        |bbox_scores|
-
-        |bbox_labels|
+        |bboxes_data|
 
     Outputs:
-        |obj_tags|
+        |obj_attrs_data|
+        :mod:`dabble.tracking` produces the ``ids`` attribute which contains
+        the tracking IDs of the detections.
+
 
     Configs:
-        tracking_type (:obj:`str`): **default = iou**
-            Type of tracking algorithm to be used. Choice between "iou",
-            "mosse". For more information about the trackers, please view
-            the use case documentation.
+        tracking_type (:obj:`str`): **{"iou", "mosse"}, default="iou"**. |br|
+            Type of tracking algorithm to be used. For more information about
+            the trackers, please view the :doc:`Object Counting (Over Time) use
+            case </use_cases/object_counting_over_time>`.
+        iou_threshold (:obj:`float`): **[0, 1], default=0.1**. |br|
+            Minimum IoU value to be used with the matching logic.
+        max_lost (:obj:`int`): **[0, sys.maxsize), default=10**. |br|
+            Maximum number of frames to keep "lost" tracks after which they
+            will be removed. Only used when ``tracking_type = iou``.
     """
 
     def __init__(self, config: Dict[str, Any] = None, **kwargs: Any) -> None:
         super().__init__(config, node_path=__name__, **kwargs)
-        self.tracker = LoadTracker(self.tracking_type)
+        self.tracker = DetectionTracker(self.config)
 
     def run(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
-        """Run object tracking"""
-        obj_tags = self.tracker.predict(inputs)
-        return {"obj_tags": obj_tags}
+        """Tracks detection bounding boxes.
+
+        Args:
+            inputs (Dict[str, Any]): Dictionary with keys "img", "bboxes", and
+                "bbox_scores.
+
+        Returns:
+            outputs (Dict[str, Any]): Tracking IDs of bounding boxes.
+            "obj_attrs" key is used for compatibility with draw nodes.
+        """
+        # Potentially use frame_rate here too since IOUTracker has a
+        # max_time_lost
+        metadata = inputs.get("mot_metadata", {"reset_model": False})
+        reset_model = metadata["reset_model"]
+        if reset_model:
+            self._reset_model()
+
+        track_ids = self.tracker.track_detections(inputs)
+
+        return {"obj_attrs": {"ids": track_ids}}
+
+    def _reset_model(self) -> None:
+        """Creates a new instance of DetectionTracker."""
+        self.logger.info(f"Creating new {self.config['tracking_type']} tracker...")
+        self.tracker = DetectionTracker(self.config)

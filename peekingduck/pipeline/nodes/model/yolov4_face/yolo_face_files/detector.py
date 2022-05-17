@@ -1,11 +1,11 @@
-# Copyright 2021 AI Singapore
-
+# Copyright 2022 AI Singapore
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-
-#      https://www.apache.org/licenses/LICENSE-2.0
-
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,6 +17,7 @@ Object detection class using yolo model to detect human faces
 """
 
 import logging
+from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
 import cv2
@@ -28,15 +29,16 @@ from tensorflow.python.saved_model import tag_constants
 class Detector:  # pylint: disable=too-few-public-methods
     """Object detection class using yolo model to find human faces"""
 
-    def __init__(self, config: Dict[str, Any]) -> None:
+    def __init__(self, config: Dict[str, Any], model_dir: Path) -> None:
         self.logger = logging.getLogger(__name__)
 
         self.config = config
+        self.model_dir = model_dir
         self.class_labels = self._get_class_labels()
         self.yolo = self._create_yolo_model()
 
     def _get_class_labels(self) -> List[str]:
-        classes_path = self.config["root"] / self.config["classes"]
+        classes_path = self.model_dir / self.config["weights"]["classes_file"]
         with open(classes_path, "rt", encoding="utf8") as file:
             class_labels = [c.strip() for c in file.readlines()]
 
@@ -44,7 +46,9 @@ class Detector:  # pylint: disable=too-few-public-methods
 
     def _create_yolo_model(self) -> cv2.dnn_Net:
         model_type = self.config["model_type"]
-        model_path = self.config["root"] / self.config["model_weights_dir"][model_type]
+        model_path = (
+            self.model_dir / self.config["weights"]["saved_model_subdir"][model_type]
+        )
         model = tf.saved_model.load(str(model_path), tags=[tag_constants.SERVING])
 
         self.logger.info(
@@ -54,8 +58,8 @@ class Detector:  # pylint: disable=too-few-public-methods
             f"IDs being detected: {self.config['detect_ids']}, \n\t"
             f"Max detections per class: {self.config['max_output_size_per_class']}, \n\t"
             f"Max total detections: {self.config['max_total_size']}, \n\t"
-            f"IOU threshold: {self.config['yolo_iou_threshold']}, \n\t"
-            f"Score threshold: {self.config['yolo_score_threshold']}"
+            f"IOU threshold: {self.config['iou_threshold']}, \n\t"
+            f"Score threshold: {self.config['score_threshold']}"
         )
 
         return model
@@ -124,9 +128,9 @@ class Detector:  # pylint: disable=too-few-public-methods
             scores=tf.reshape(
                 pred_conf, (tf.shape(pred_conf)[0], -1, tf.shape(pred_conf)[-1])
             ),
-            score_threshold=self.config["yolo_score_threshold"],
+            score_threshold=self.config["score_threshold"],
             max_total_size=self.config["max_total_size"],
-            iou_threshold=self.config["yolo_iou_threshold"],
+            iou_threshold=self.config["iou_threshold"],
         )
 
         return bboxes, scores, classes, nums

@@ -1,4 +1,4 @@
-# Copyright 2021 AI Singapore
+# Copyright 2022 AI Singapore
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,15 +22,16 @@ import importlib
 import logging
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
 import yaml
 
 from peekingduck.configloader import ConfigLoader
 from peekingduck.pipeline.nodes.node import AbstractNode
 from peekingduck.pipeline.pipeline import Pipeline
+from peekingduck.utils.create_node_helper import obj_det_change_class_name_to_id
 
-PEEKINGDUCK_NODE_TYPES = ["input", "model", "draw", "dabble", "output"]
+PEEKINGDUCK_NODE_TYPES = ["input", "augment", "model", "draw", "dabble", "output"]
 
 
 class DeclarativeLoader:  # pylint: disable=too-few-public-methods
@@ -38,11 +39,11 @@ class DeclarativeLoader:  # pylint: disable=too-few-public-methods
     :py:class:`Pipeline <peekingduck.pipeline.pipeline.Pipeline>`.
 
     The declarative loader class creates the specified nodes according to any
-    modfications provided in the configs and returns the pipeline needed for
+    modifications provided in the configs and returns the pipeline needed for
     inference.
 
     Args:
-        run_config_path (:obj:`pathlib.Path`): Path to a YAML file that
+        pipeline_path (:obj:`pathlib.Path`): Path to a YAML file that
             declares the node sequence to be used in the pipeline.
         config_updates_cli (:obj:`str`): Stringified nested dictionaries of
             configuration changes passed as part of CLI command. Used to modify
@@ -56,16 +57,16 @@ class DeclarativeLoader:  # pylint: disable=too-few-public-methods
 
     def __init__(
         self,
-        run_config_path: Path,
+        pipeline_path: Path,
         config_updates_cli: str,
         custom_nodes_parent_subdir: str,
     ) -> None:
         self.logger = logging.getLogger(__name__)
 
-        pkd_base_dir = Path(__file__).resolve().parent
-        self.config_loader = ConfigLoader(pkd_base_dir)
+        self.pkd_base_dir = Path(__file__).resolve().parent
+        self.config_loader = ConfigLoader(self.pkd_base_dir)
 
-        self.node_list = self._load_node_list(run_config_path)
+        self.node_list = self._load_node_list(pipeline_path)
         self.config_updates_cli = ast.literal_eval(config_updates_cli)
 
         custom_nodes_name = self._get_custom_name_from_node_list()
@@ -78,22 +79,62 @@ class DeclarativeLoader:  # pylint: disable=too-few-public-methods
 
             self.custom_nodes_dir = custom_nodes_dir
 
-    def _load_node_list(self, run_config_path: Path) -> List[str]:
-        """Loads a list of nodes from run_config_path.yml"""
-        with open(run_config_path) as node_yml:
-            nodes = yaml.safe_load(node_yml)["nodes"]
+    def _load_node_list(self, pipeline_path: Path) -> "NodeList":
+        """Loads a list of nodes from pipeline_path.yml"""
 
-        self.logger.info("Successfully loaded run_config file.")
-        return nodes
+        # dotw 2022-03-17: Temporary helper methods
+        def deprecation_warning(name: str, config: Union[str, Dict[str, Any]]) -> None:
+            self.logger.warning(f"`{name}` deprecated, replaced by `input.visual`")
+            self.logger.warning(f"convert `{name}` to `input.visual`:{config}")
+
+        with open(pipeline_path) as node_yml:
+            data = yaml.safe_load(node_yml)
+        if not isinstance(data, dict) or "nodes" not in data:
+            raise ValueError(
+                f"{pipeline_path} has an invalid structure. "
+                "Missing top-level 'nodes' key."
+            )
+
+        nodes = data["nodes"]
+        if nodes is None:
+            raise ValueError(f"{pipeline_path} does not contain any nodes!")
+
+        # dotw 2022-03-16: Temporary code to convert existing `input.live` and
+        #                  `input.recorded` into new `input.visual`
+        #                  To be removed in subsequent versions
+        upgraded_nodes = []
+        for node in nodes:
+            if isinstance(node, str):
+                if node in ["input.live", "input.recorded"]:
+                    deprecation_warning(node, "input.visual")
+                    if node == "input.live":
+                        node = {"input.visual": {"source": 0}}
+                    else:
+                        self.logger.error("input.recorded with no parameters error!")
+                        node = "input.visual"
+            else:
+                if "input.live" in node:
+                    node_config = node.pop("input.live")
+                    if "input_source" in node_config:
+                        node_config["source"] = node_config.pop("input_source")
+                    node["input.visual"] = node_config
+                    deprecation_warning("input.live", node_config)
+                if "input.recorded" in node:
+                    node_config = node.pop("input.recorded")
+                    if "input_dir" in node_config:
+                        node_config["source"] = node_config.pop("input_dir")
+                    node["input.visual"] = node_config
+                    deprecation_warning("input.recorded", node_config)
+            upgraded_nodes.append(node)
+
+        self.logger.info("Successfully loaded pipeline file.")
+        return NodeList(upgraded_nodes)
 
     def _get_custom_name_from_node_list(self) -> Any:
         custom_name = None
 
-        for node in self.node_list:
-            if isinstance(node, dict):
-                node_type = [*node][0].split(".")[0]
-            else:
-                node_type = node.split(".")[0]
+        for node_str, _ in self.node_list:
+            node_type = node_str.split(".")[0]
 
             if node_type not in PEEKINGDUCK_NODE_TYPES:
                 custom_name = node_type
@@ -105,17 +146,10 @@ class DeclarativeLoader:  # pylint: disable=too-few-public-methods
         """Given a list of imported nodes, instantiate nodes"""
         instantiated_nodes = []
 
-        for node_item in self.node_list:
-            if isinstance(node_item, dict):
-                # node_str = list(node_item.keys())[0]
-                node_str = next(iter(node_item))
-                config_updates_yml = node_item[node_str]
-            else:
-                node_str = node_item
-                config_updates_yml = None
-
+        for node_str, config_updates_yml in self.node_list:
             node_str_split = node_str.split(".")
-            self.logger.info(f"Initialising {node_str} node...")
+
+            self.logger.info(f"Initializing {node_str} node...")
 
             if len(node_str_split) == 3:
                 # convert windows/linux filepath to a module path
@@ -146,11 +180,11 @@ class DeclarativeLoader:  # pylint: disable=too-few-public-methods
         config_loader: ConfigLoader,
         config_updates_yml: Optional[Dict[str, Any]],
     ) -> AbstractNode:
-        """Imports node to filepath and initialise node with config."""
+        """Imports node to filepath and initializes node with config."""
         node = importlib.import_module(path_to_node + node_name)
         config = config_loader.get(node_name)
 
-        # First, override default configs with values from run_config.yml
+        # First, override default configs with values from pipeline_config.yml
         if config_updates_yml is not None:
             config = self._edit_config(config, config_updates_yml, node_name)
 
@@ -166,9 +200,7 @@ class DeclarativeLoader:  # pylint: disable=too-few-public-methods
     def _edit_config(
         self, dict_orig: Dict[str, Any], dict_update: Dict[str, Any], node_name: str
     ) -> Dict[str, Any]:
-        """Update value of a nested dictionary of varying depth using
-        recursion
-        """
+        """Update value of a nested dictionary of varying depth using recursion"""
         for key, value in dict_update.items():
             if isinstance(value, collections.abc.Mapping):
                 dict_orig[key] = self._edit_config(
@@ -180,6 +212,11 @@ class DeclarativeLoader:  # pylint: disable=too-few-public-methods
                         f"Config for node {node_name} does not have the key: {key}"
                     )
                 else:
+                    if key == "detect_ids":
+                        key, value = obj_det_change_class_name_to_id(
+                            node_name, key, value
+                        )
+
                     dict_orig[key] = value
                     self.logger.info(
                         f"Config for node {node_name} is updated to: '{key}': {value}"
@@ -198,3 +235,32 @@ class DeclarativeLoader:  # pylint: disable=too-few-public-methods
         except ValueError as error:
             self.logger.error(str(error))
             sys.exit(1)
+
+
+class NodeList:
+    """Iterator class to return node string and node configs (if any) from the
+    nodes declared in the run config file.
+    """
+
+    def __init__(self, nodes: List[Union[Dict[str, Any], str]]) -> None:
+        self.nodes = nodes
+        self.length = len(nodes)
+
+    def __iter__(self) -> Iterator[Tuple[str, Optional[Dict[str, Any]]]]:
+        self.current = -1
+        return self
+
+    def __next__(self) -> Tuple[str, Optional[Dict[str, Any]]]:
+        self.current += 1
+        if self.current >= self.length:
+            raise StopIteration
+        node_item = self.nodes[self.current]
+
+        if isinstance(node_item, dict):
+            node_str = next(iter(node_item))
+            config_updates = node_item[node_str]
+        else:
+            node_str = node_item
+            config_updates = None
+
+        return node_str, config_updates

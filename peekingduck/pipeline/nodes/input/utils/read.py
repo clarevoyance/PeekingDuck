@@ -1,4 +1,4 @@
-# Copyright 2021 AI Singapore
+# Copyright 2022 AI Singapore
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,12 +16,13 @@
 Reader functions for input nodes
 """
 
-from pathlib import Path
-from typing import Any, Tuple
-from threading import Thread, Event
 import logging
 import platform
 import queue
+from pathlib import Path
+from threading import Event, Thread
+from typing import Any, Tuple
+
 import cv2
 
 from peekingduck.pipeline.nodes.input.utils.preprocess import mirror
@@ -33,11 +34,8 @@ class VideoThread:
     """
 
     # pylint: disable=too-many-instance-attributes
-    # pylint: disable=logging-fstring-interpolation
 
-    def __init__(
-        self, input_source: str, mirror_image: bool, buffer_frames: bool
-    ) -> None:
+    def __init__(self, input_source: str, mirror_image: bool, buffering: bool) -> None:
         if platform.system().startswith("Windows"):
             if str(input_source).isdigit():
                 # to eliminate opencv's "[WARN] terminating async callback"
@@ -60,7 +58,7 @@ class VideoThread:
         self.frame_counter = 0
         self.frame = None
         self.prev_frame = None
-        self.buffer = buffer_frames
+        self.buffer = buffering
         self.queue: queue.Queue = queue.Queue()
         # start threading
         self.thread = Thread(target=self._reading_thread, args=(), daemon=True)
@@ -68,9 +66,10 @@ class VideoThread:
         self.is_thread_start.wait()
 
     def __del__(self) -> None:
-        # dotw: self.logger.debug below crashes on Nvidia Jetson Xavier Ubuntu 18.04 python 3.6
-        #       but does not crash on Intel MacBook Pro Ubuntu 20.04 python 3.7
-        # self.logger.debug("VideoThread.__del__")
+        """
+        Release acquired resources here.
+        """
+        self.logger.debug("VideoThread.__del__")
         self.stream.release()
 
     def shutdown(self) -> None:
@@ -145,6 +144,15 @@ class VideoThread:
         """
         num_frames = self.stream.get(cv2.CAP_PROP_FRAME_COUNT)
         return int(num_frames)
+
+    @property
+    def queue_size(self) -> int:
+        """Get buffer queue size
+
+        Returns:
+            int: number of frames in buffer
+        """
+        return self.queue.qsize()
 
     @property
     def resolution(self) -> Tuple[int, int]:
@@ -229,6 +237,15 @@ class VideoNoThread:
         """
         num_frames = self.stream.get(cv2.CAP_PROP_FRAME_COUNT)
         return int(num_frames)
+
+    @property
+    def queue_size(self) -> int:
+        """Get buffer queue size
+
+        Returns:
+            int: number of frames in buffer
+        """
+        return 0
 
     @property
     def resolution(self) -> Tuple[int, int]:

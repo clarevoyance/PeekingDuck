@@ -1,4 +1,4 @@
-# Copyright 2021 AI Singapore
+# Copyright 2022 AI Singapore
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -44,7 +44,7 @@ def rescale_image(
         model_type (str): specified model type (refer to modelconfig.yml)
 
     Returns:
-        image_processed (np.array): proccessed image array
+        image_processed (np.array): processed image array
         scale (np.array): factor to scale height and width
     """
     target_width, target_height = _get_valid_resolution(

@@ -1,4 +1,4 @@
-# Copyright 2021 AI Singapore
+# Copyright 2022 AI Singapore
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -46,7 +46,8 @@ def project_points_onto_original_image(
         image_size (Tuple[int, int]): Width and height of image
 
     Returns:
-        porject_points (np.ndarray): projected points on the original image
+        project_points (np.ndarray): projected points on the original image
+                                     in integer coordinates
     """
     if len(points) == 0:
         return []
@@ -59,4 +60,4 @@ def project_points_onto_original_image(
     projected_points[:, 0] *= width
     projected_points[:, 1] *= height
 
-    return projected_points
+    return np.round(projected_points).astype(int)

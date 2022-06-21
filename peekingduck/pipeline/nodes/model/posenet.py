@@ -18,8 +18,8 @@ from typing import Any, Dict
 
 import numpy as np
 
+from peekingduck.pipeline.nodes.abstract_node import AbstractNode
 from peekingduck.pipeline.nodes.model.posenetv1 import posenet_model
-from peekingduck.pipeline.nodes.node import AbstractNode
 
 
 class Node(AbstractNode):
@@ -45,8 +45,8 @@ class Node(AbstractNode):
         |bbox_labels_data|
 
     Configs:
-        model_type (:obj:`str`):
-            **{"resnet", "50", "75", "100"}, default="resnet"**. |br|
+        model_type (:obj:`Union[str, int]`):
+            **{"resnet", 50, 75, 100}, default="resnet"**. |br|
             Defines the backbone model for PoseNet.
         weights_parent_dir (:obj:`Optional[str]`): **default = null**. |br|
             Change the parent directory where weights will be stored by
@@ -84,9 +84,9 @@ class Node(AbstractNode):
 
         outputs = {
             "bboxes": bboxes,
+            "bbox_labels": bbox_labels,
             "keypoints": keypoints,
             "keypoint_scores": keypoint_scores,
             "keypoint_conns": keypoint_conns,
-            "bbox_labels": bbox_labels,
         }
         return outputs

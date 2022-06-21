@@ -97,7 +97,7 @@ Change the content of ``debug.py`` to:
   
       import numpy as np
   
-      from peekingduck.pipeline.nodes.node import AbstractNode
+      from peekingduck.pipeline.nodes.abstract_node import AbstractNode
   
   
       class Node(AbstractNode):
@@ -148,7 +148,7 @@ Copy over the following code to ``demo_debug.py``:
           debug_node = debug.Node(pkd_base_dir=Path.cwd() / "src" / "custom_nodes")
       
           visual_node = visual.Node(source=str(Path.cwd() / "cat_and_computer.mp4"))
-          yolo_node = yolo.Node(detect_ids=["cup", "cat", "laptop", "keyboard", "mouse"])
+          yolo_node = yolo.Node(detect=["cup", "cat", "laptop", "keyboard", "mouse"])
           bbox_node = bbox.Node(show_labels=True)
       
           fps_node = fps.Node()
@@ -185,7 +185,7 @@ configuration, you can pass the new values to the ``Node()`` constructor as keyw
 
 
 Lines 25 - 37: Initialize the PeekingDuck ``Runner`` from
-`runner.py <https://github.com/aimakerspace/PeekingDuck/blob/dev/peekingduck/runner.py>`_ with the
+`runner.py <https://github.com/aimakerspace/PeekingDuck/blob/main/peekingduck/runner.py>`_ with the
 list of nodes passed in via the ``nodes`` argument.
 
 .. note::
@@ -211,7 +211,7 @@ You should see the following output in your terminal:
    2022-02-24 16:33:06 peekingduck.pipeline.nodes.input.visual  INFO:  Config for node input.visual is updated to: 'source': ~user/pkd_project/cat_and_computer.mp4 
    2022-02-24 16:33:06 peekingduck.pipeline.nodes.input.visual  INFO:  Video/Image size: 720 by 480 
    2022-02-24 16:33:06 peekingduck.pipeline.nodes.input.visual  INFO:  Filepath used: ~user/pkd_project/cat_and_computer.mp4 
-   2022-02-24 16:33:06 peekingduck.pipeline.nodes.model.yolo  INFO:  Config for node model.yolo is updated to: 'detect_ids': [41, 15, 63, 66, 64] 
+   2022-02-24 16:33:06 peekingduck.pipeline.nodes.model.yolo  INFO:  Config for node model.yolo is updated to: 'detect': [41, 15, 63, 66, 64] 
    2022-02-24 16:33:06 peekingduck.pipeline.nodes.model.yolov4.yolo_files.detector  INFO:  Yolo model loaded with following configs: 
        Model type: v4tiny, 
        Input resolution: 416, 
@@ -246,15 +246,15 @@ are also able to use PeekingDuck nodes with external packages when designing the
 
 In this demo, we will show how users can construct a custom PeekingDuck pipeline using:
 
-    * Data loaders such as `tf.keras.utils.image_dataset_from_directory
-      <https://www.tensorflow.org/api_docs/python/tf/keras/utils/image_dataset_from_directory>`_
+    * Data loaders such as `tf.keras.preprocessing.image_dataset_from_directory
+      <https://www.tensorflow.org/api_docs/python/tf/keras/preprocessing/image_dataset_from_directory>`_
       (available in ``tensorflow>=2.3.0``),
     * External packages (not implemented as PeekingDuck nodes) such as `easyocr
       <https://pypi.org/project/easyocr/>`_, and
     * Visualization packages such as `matplotlib <https://pypi.org/project/matplotlib/>`_.
 
 The notebook corresponding to this tutorial, ``calling_peekingduck_in_python.ipynb``, can be found in the
-`notebooks <https://github.com/aimakerspace/PeekingDuck/tree/dev/notebooks>`_ folder of the
+`notebooks <https://github.com/aimakerspace/PeekingDuck/tree/main/notebooks>`_ folder of the
 PeekingDuck repository and is also available as a
 `Colab notebook <https://colab.research.google.com/drive/1NwQKrnY_3ia2mBEaUinkvUqbrjjT3ssq#scrollTo=l2MCyh5Hgp5O>`_.
 
@@ -437,12 +437,12 @@ Create a Dataset Loader
       :linenos:
   
       data_dir = Path.cwd().resolve() / "data" / "oidv6" / "train"
-      dataset = tf.keras.utils.image_dataset_from_directory(
+      dataset = tf.keras.preprocessing.image_dataset_from_directory(
           data_dir, batch_size=1, shuffle=False
       )
 
-Lines 2 - 4: We create the data loader using ``tf.keras.utils.image_dataset_from_directory()``; you can
-also create your own data loader class.
+Lines 2 - 4: We create the data loader using ``tf.keras.preprocessing.image_dataset_from_directory()``;
+you can also create your own data loader class.
 
 
 Create a License Plate Parser Class

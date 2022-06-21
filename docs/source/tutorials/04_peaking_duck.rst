@@ -102,7 +102,7 @@ Edit the following **five files** as described below:
    
          from typing import Any, Dict
          from datetime import datetime
-         from peekingduck.pipeline.nodes.node import AbstractNode
+         from peekingduck.pipeline.nodes.abstract_node import AbstractNode
          import sqlite3
    
          DB_FILE = "wave.db"           # name of database file
@@ -296,7 +296,7 @@ Edit ``pipeline_config.yml`` as follows:
       - input.visual:
           source: highway_cars.mp4
       - model.yolo:
-          detect_ids: ["car"]
+          detect: ["car"]
           score_threshold: 0.3
       - dabble.bbox_count
       - dabble.fps
@@ -362,7 +362,7 @@ Create the following ``pipeline_config.yml``:
       - input.visual:
           source: people_walking.mp4
       - model.yolo:
-          detect_ids: ["person"]
+          detect: ["person"]
       - dabble.tracking
       - dabble.statistics:
           maximum: obj_attrs["ids"]
@@ -455,7 +455,7 @@ Change ``pipeline_config.yml`` to the following:
       - input.visual:
           source: people_walking.mp4
       - model.yolo:
-          detect_ids: ["person"]
+          detect: ["person"]
       - dabble.bbox_to_btm_midpoint
       - dabble.zone_count:
           resolution: [720, 480]
@@ -531,7 +531,7 @@ The ``filter_bbox.yml`` and ``filter_bbox.py`` files are shown below:
 
          from typing import Any, Dict
          import numpy as np
-         from peekingduck.pipeline.nodes.node import AbstractNode
+         from peekingduck.pipeline.nodes.abstract_node import AbstractNode
 
 
          class Node(AbstractNode):

@@ -19,7 +19,7 @@ Displays selected information from preceding nodes in a legend box.
 from typing import Any, Dict, List
 
 from peekingduck.pipeline.nodes.draw.utils.legend import Legend
-from peekingduck.pipeline.nodes.node import AbstractNode
+from peekingduck.pipeline.nodes.abstract_node import AbstractNode
 
 
 class Node(AbstractNode):
@@ -85,7 +85,7 @@ class Node(AbstractNode):
             outputs (dict): Dictionary with keys "none".
         """
         _check_data_type(inputs, self.show)
-        Legend().draw(inputs, self.show, self.position)
+        Legend().draw(inputs, self.show, self.position, self.box_opacity)
         # cv2 weighted does not update the referenced image. Need to return and replace.
         return {"img": inputs["img"]}
 

@@ -20,7 +20,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List
 
-from peekingduck.pipeline.nodes.node import AbstractNode
+from peekingduck.pipeline.nodes.abstract_node import AbstractNode
 from peekingduck.pipeline.nodes.output.utils.csvlogger import CSVLogger
 
 
@@ -42,7 +42,8 @@ class Node(AbstractNode):
             present in the data pool.
         file_path (:obj:`str`):
             **default = "PeekingDuck/data/stats.csv"**. |br|
-            Directory where CSV file is saved.
+            Path of the CSV file to be saved. The resulting file name would have an appended
+            timestamp.
         logging_interval (:obj:`int`): **default = 1**. |br|
             Interval between each log, in terms of seconds.
     """
@@ -104,12 +105,12 @@ class Node(AbstractNode):
             else:
                 invalid.append(stat)
 
-        if not invalid:
+        if invalid:
             msg = textwrap.dedent(
                 f"""\
                 {invalid} are not valid outputs.
                 Data pool only has this outputs: {list(inputs.keys())}
-                Only {valid} will be logged in the csv file
+                Only {valid} will be logged in the csv file.
                 """
             )
             self.logger.warning(msg)

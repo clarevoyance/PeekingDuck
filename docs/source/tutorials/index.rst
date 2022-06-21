@@ -2,10 +2,14 @@
 
 .. _tutorials:
 
+*********
 Tutorials
-=========
+*********
 
-Below are the list of Tutorial articles:
+The tutorials are presented in order of increasing difficulty, from the basic
+:doc:`Hello Computer Vision </tutorials/01_hello_cv>` to the advanced
+:doc:`Peaking Duck </tutorials/04_peaking_duck>`. It is recommended to go
+through these tutorials in order, especially if you are new to PeekingDuck.
 
 .. toctree::
    :maxdepth: 2
@@ -14,4 +18,5 @@ Below are the list of Tutorial articles:
    /tutorials/02_duck_confit
    /tutorials/03_custom_nodes
    /tutorials/04_peaking_duck
-   /tutorials/05_import_as_module
+   /tutorials/05_calling_peekingduck_in_python
+   /tutorials/06_using_your_own_models

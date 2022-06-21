@@ -12,7 +12,7 @@ Introduction
    :target: https://pypi.org/project/peekingduck
     
 .. image:: https://img.shields.io/badge/license-Apache%202.0-blue.svg
-   :target: https://github.com/aimakerspace/PeekingDuck/blob/dev/LICENSE
+   :target: https://github.com/aimakerspace/PeekingDuck/blob/main/LICENSE
 
 
 What is PeekingDuck?
@@ -33,21 +33,23 @@ Build realtime CV pipelines
 PeekingDuck enables you to build powerful CV pipelines with minimal lines of code.
 
 
-Leverage on various SOTA models
--------------------------------
+Leverage on SOTA models
+-----------------------
 
-PeekingDuck comes with various :doc:`object detection </resources/01a_object_detection>`,
-:doc:`pose estimation </resources/01b_pose_estimation>`, :doc:`object tracking <resources/01c_object_tracking>`,
-and :doc:`crowd counting </resources/01d_crowd_counting>` models. Mix and match different nodes
-to construct solutions for various :doc:`use cases </use_cases/index>`.
+PeekingDuck comes with various state of the art (SOTA)
+:doc:`object detection </resources/01a_object_detection>`,
+:doc:`pose estimation </resources/01b_pose_estimation>`,
+:doc:`object tracking <resources/01c_object_tracking>`, and
+:doc:`crowd counting </resources/01d_crowd_counting>` models. Mix and match different nodes to
+construct solutions for various :doc:`use cases </use_cases/index>`.
 
 
 Create custom nodes
 -------------------
 
 You can create :ref:`custom nodes <tutorial_custom_nodes>` to meet your own project's requirements.
-PeekingDuck can also be :doc:`imported as a library </tutorials/05_import_as_module>` to fit into
-your existing workflows.
+PeekingDuck can also be :doc:`imported as a library </tutorials/05_calling_peekingduck_in_python>`
+to fit into your existing workflows.
 
 
 .. _how_peekingduck_works:
@@ -55,17 +57,17 @@ your existing workflows.
 How PeekingDuck Works
 =====================
 
-**Nodes** are the building blocks of PeekingDuck. Each node is a wrapper for a Python function, and
+**Nodes** are the building blocks of PeekingDuck. Each node is a wrapper for a pipeline function, and
 contains information on how other PeekingDuck nodes may interact with it.
 
 PeekingDuck has 6 types of nodes:
 
 .. image:: /assets/diagrams/node_types.drawio.svg
 
-A **pipeline** governs the behavior of a chain of nodes. The diagram below shows the pipeline used
-in the previous demo. Nodes in a pipeline are called in sequential order, and the output of one
-node will be the input to another. For example, :mod:`input.live` produces :term:`img`, which is taken
-in by :mod:`model.yolo`, and :mod:`model.yolo` produces ``bboxes``, which is taken in by
+A **pipeline** governs the behavior of a chain of nodes. The diagram below shows a sample pipeline.
+Nodes in a pipeline are called in sequential order, and the output of one
+node will be the input to another. For example, :mod:`input.visual` produces :term:`img`, which is taken
+in by :mod:`model.yolo`, and :mod:`model.yolo` produces :term:`bboxes`, which is taken in by
 :mod:`draw.bbox`. For ease of visualization, not all the inputs and outputs of these nodes are
 included in this diagram.
 
@@ -77,14 +79,14 @@ Acknowledgements
 
 This project is supported by the National Research Foundation, Singapore under its AI Singapore
 Programme (AISG-RP-2019-050). Any opinions, findings, and conclusions or recommendations expressed
-in this material are those of the author(s) and do not reflect the views of National Research
+in this material are those of the author(s) and do not reflect the views of the National Research
 Foundation, Singapore.
 
 
 License
 =======
 
-PeekingDuck is under the open source `Apache License 2.0 <https://github.com/aimakerspace/PeekingDuck/blob/dev/LICENSE>`_ (:
+PeekingDuck is under the open source `Apache License 2.0 <https://github.com/aimakerspace/PeekingDuck/blob/main/LICENSE>`_ (:
 
 Even so, your organization may require legal proof of its right to use PeekingDuck, due to
 circumstances such as the following:

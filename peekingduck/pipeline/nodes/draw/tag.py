@@ -12,15 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Draws a tag (from :term:`obj_attrs`) above each bounding box
-"""
+"""Draws a tag (from :term:`obj_attrs`) above each bounding box."""
 
 import copy
 from typing import Any, Dict, List
 
 from peekingduck.pipeline.nodes.draw.utils.bbox import check_bgr_type, draw_tags
-from peekingduck.pipeline.nodes.node import AbstractNode
+from peekingduck.pipeline.nodes.abstract_node import AbstractNode
 
 
 class Node(AbstractNode):
@@ -80,7 +78,7 @@ class Node(AbstractNode):
 
     Configs:
         show (:obj:`List[str]`): **default = []**. |br|
-            List the desired attributes to be drawn. For more details on how to
+            List of desired attributes to be drawn. For more details on how to
             use this config, see the section above.
         tag_color (:obj:`List[int]`): **default = [77, 103, 255]**. |br|
             Define the color of the drawn tag, in BGR format. Defined values

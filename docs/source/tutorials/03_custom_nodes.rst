@@ -11,8 +11,7 @@ PeekingDuck.
 Perhaps you'd like to take a snapshot of a video frame, and post it to your API
 endpoint; 
 or perhaps you have a model trained on a custom dataset, and would like to use
-PeekingDuck's :ref:`input <api_doc>`, :ref:`draw <api_doc>`, and :ref:`output
-<api_doc>` nodes. 
+PeekingDuck's :mod:`input`, :mod:`draw`, and :mod:`output` nodes. 
 PeekingDuck is designed to be very flexible --- you can create your own nodes
 and use them with ours.
 
@@ -43,7 +42,7 @@ as placeholders for contents to be added.
 Recipe 1: Object Detection Score
 ================================
 
-When the Yolo object detection model detects an object in the image, it assigns 
+When the YOLO object detection model detects an object in the image, it assigns 
 a bounding box and a score to it.
 This score is the "confidence score" which reflects how likely the box contains 
 an object and how accurate is the bounding box.
@@ -62,7 +61,7 @@ Press :greenbox:`<Enter>` to accept the default ``custom_nodes`` folder name, th
 in :greenbox:`draw` for node type and :greenbox:`score` for node name.
 Finally, press :greenbox:`<Enter>` to answer ``Y`` when asked to proceed.
 
-The entire interaction is shown here, the answers you type are in shown in 
+The entire interaction is shown here, the answers you type in are shown in 
 :green:`green text`:
 
 .. _tutorial_wave_project_custom_node:
@@ -175,7 +174,7 @@ implement our custom node function.
    
          from typing import Any, Dict, List, Tuple
          import cv2
-         from peekingduck.pipeline.nodes.node import AbstractNode
+         from peekingduck.pipeline.nodes.abstract_node import AbstractNode
    
          YELLOW = (0, 255, 255)        # in BGR format, per opencv's convention
    
@@ -241,7 +240,7 @@ implement our custom node function.
    
                for i, bbox in enumerate(bboxes):
                   # for each bounding box:
-                  #   - compute (x1, y1) left-top, (x2, y2) right-bottom coordinates
+                  #   - compute (x1, y1) top-left, (x2, y2) bottom-right coordinates
                   #   - convert score into a two decimal place numeric string
                   #   - draw score string onto image using opencv's putText()
                   #     (see opencv's API docs for more info)
@@ -268,7 +267,6 @@ implement our custom node function.
    compute its on-screen coordinates and to draw the bounding box confidence score at 
    its left-bottom position.
 
-
 #. **pipeline_config.yml**:
 
    ``pipeline_config.yml`` initial content:
@@ -277,9 +275,10 @@ implement our custom node function.
       :linenos:
 
       nodes:
-      - input.live
-      - model.yolo
-      - draw.bbox
+      - input.visual:
+          source: https://storage.googleapis.com/peekingduck/videos/wave.mp4
+      - model.posenet
+      - draw.poses
       - output.screen
 
    This file implements the pipeline.  Modify the default pipeline to the one shown below:
@@ -290,10 +289,10 @@ implement our custom node function.
       :linenos:
 
       nodes:
-      - input.recorded:
-          input_dir: cat_and_computer.mp4
+      - input.visual:
+          source: cat_and_computer.mp4
       - model.yolo:
-          detect_ids: ["cup", "cat", "laptop", "keyboard", "mouse"]
+          detect: ["cup", "cat", "laptop", "keyboard", "mouse"]
       - draw.bbox:
           show_labels: True
       - custom_nodes.draw.score
@@ -329,7 +328,8 @@ The PoseNet pose estimation model outputs seventeen keypoints for the person
 corresponding to the different body parts as documented :ref:`here
 <whole-body-keypoint-ids>`.
 Each keypoint is a pair of ``(x, y)`` coordinates, where ``x`` and ``y`` are
-real numbers ranging from 0.0 to 1.0 (using relative coordinates).
+real numbers ranging from 0.0 to 1.0 (using
+:ref:`relative coordinates <tutorial_coordinate_systems>`).
 
 Starting with a newly initialized PeekingDuck folder, call :greenbox:`peekingduck
 create-node` to create a new ``dabble.wave`` custom node as shown below:
@@ -377,7 +377,7 @@ the above folder.  You should end up with the following folder structure:
 To implement this tutorial, the **three files** ``wave.yml``, ``wave.py`` and
 ``pipeline_config.yml`` are to be edited as follows:
 
-1. **src/custom_nodes/configs/dabble/wave.yml**:
+#. **src/custom_nodes/configs/dabble/wave.yml**:
 
    .. code-block:: yaml
       :linenos:
@@ -388,11 +388,11 @@ To implement this tutorial, the **three files** ``wave.yml``, ``wave.py`` and
 
       # No optional configs
 
-We will implement this tutorial using a custom :mod:`dabble` node, which will take the
-inputs :term:`img`, :term:`bboxes`, :term:`bbox_scores`, :term:`keypoints`, and
-:term:`keypoint_scores` from the pipeline. The node has no output.
+   We will implement this tutorial using a custom :mod:`dabble` node, which will take the
+   inputs :term:`img`, :term:`bboxes`, :term:`bbox_scores`, :term:`keypoints`, and
+   :term:`keypoint_scores` from the pipeline. The node has no output.
 
-2. **src/custom_nodes/dabble/wave.py**:
+#. **src/custom_nodes/dabble/wave.py**:
 
    The ``dabble.wave`` code structure is similar to the ``draw.score`` code structure in
    the other custom node tutorial.
@@ -412,7 +412,7 @@ inputs :term:`img`, :term:`bboxes`, :term:`bbox_scores`, :term:`keypoints`, and
    
          from typing import Any, Dict, List, Tuple
          import cv2
-         from peekingduck.pipeline.nodes.node import AbstractNode
+         from peekingduck.pipeline.nodes.abstract_node import AbstractNode
    
          # setup global constants
          FONT = cv2.FONT_HERSHEY_SIMPLEX
@@ -598,25 +598,25 @@ inputs :term:`img`, :term:`bboxes`, :term:`bbox_scores`, :term:`keypoints`, and
    This (long) piece of code implements our custom :mod:`dabble` node. 
    It defines three helper functions to convert relative to absolute coordinates 
    and to draw text on-screen.
-   The number of hand waves is displayed at the left-top corner of the screen.
+   The number of hand waves is displayed at the top-left corner of the screen.
 
    A simple heuristic is used to count the number of times the person waves his hand. 
-   It tracks the direction the right wrist is moving in and notes when the wrist changes
+   It tracks the direction in which the right wrist is moving and notes when the wrist changes
    direction. 
    Upon encountering two direction changes, e.g., left -> right -> left, one wave is
    counted.
 
    The heuristic also waits until the right wrist has been lifted above the right 
-   should before it starts tracking hand direction and counting waves.
+   shoulder before it starts tracking hand direction and counting waves.
 
-3. **pipeline_config.yml**:
+#. **pipeline_config.yml**:
 
    .. code-block:: yaml
       :linenos:
 
       nodes:
-      - input.recorded:
-          input_dir: wave.mp4
+      - input.visual:
+          source: wave.mp4
       - model.yolo
       - model.posenet
       - dabble.fps
@@ -690,9 +690,9 @@ The updated folder structure is:
    │           └── wave.py
    └── wave.mp4
 
-Then, make the following **three** changes:
+Make the following **three** changes:
 
-1. Specify ``debug.yml`` to receive everything ":term:`all <(input) all>`" from
+1. Define ``debug.yml`` to receive ":term:`all <(input) all>`" inputs from
    the pipeline, as follows:
 
    .. code-block:: yaml
@@ -721,7 +721,7 @@ Then, make the following **three** changes:
 
          from typing import Any, Dict
 
-         from peekingduck.pipeline.nodes.node import AbstractNode
+         from peekingduck.pipeline.nodes.abstract_node import AbstractNode
 
 
          class Node(AbstractNode):
@@ -765,14 +765,14 @@ Then, make the following **three** changes:
    It also demonstrates how to debug a specific data object, such as :term:`bboxes`, by
    printing relevant information for each item within the data.
 
-3. Update **pipeline_config.yml**:
+3. Update ``pipeline_config.yml``:
 
    .. code-block:: yaml
       :linenos:
 
       nodes:
-      - input.recorded:
-          input_dir: wave.mp4
+      - input.visual:
+          source: wave.mp4
       - model.yolo
       - model.posenet
       - dabble.fps
@@ -790,16 +790,16 @@ one below:
 
    | \ :blue:`[~user/wave_project]` \ > \ :green:`peekingduck run` \ 
    | 2022-03-02 18:42:51 peekingduck.declarative_loader  INFO:  Successfully loaded pipeline_config file. 
-   | 2022-03-02 18:42:51 peekingduck.declarative_loader  INFO:  Initialising input.recorded node.\.\. 
-   | 2022-03-02 18:42:51 peekingduck.declarative_loader  INFO:  Config for node input.recorded is updated to: 'input_dir': wave.mp4 
-   | 2022-03-02 18:42:51 peekingduck.pipeline.nodes.input.recorded  INFO:  Video/Image size: 710 by 540 
-   | 2022-03-02 18:42:51 peekingduck.pipeline.nodes.input.recorded  INFO:  Filepath used: wave.mp4 
-   | 2022-03-02 18:42:51 peekingduck.declarative_loader  INFO:  Initialising model.yolo node.\.\. 
+   | 2022-03-02 18:42:51 peekingduck.declarative_loader  INFO:  Initializing input.visual node.\.\. 
+   | 2022-03-02 18:42:51 peekingduck.declarative_loader  INFO:  Config for node input.visual is updated to: 'source': wave.mp4 
+   | 2022-03-02 18:42:51 peekingduck.pipeline.nodes.input.visual  INFO:  Video/Image size: 710 by 540 
+   | 2022-03-02 18:42:51 peekingduck.pipeline.nodes.input.visual  INFO:  Filepath used: wave.mp4 
+   | 2022-03-02 18:42:51 peekingduck.declarative_loader  INFO:  Initializing model.yolo node.\.\. 
    |                     [ .\.\. many lines of output deleted here .\.\. ]
-   | 2022-03-02 18:42:53 peekingduck.declarative_loader  INFO:  Initialising custom_nodes.dabble.debug node.\.\. 
-   | 2022-03-02 18:42:53 peekingduck.declarative_loader  INFO:  Initialising draw.poses node.\.\. 
-   | 2022-03-02 18:42:53 peekingduck.declarative_loader  INFO:  Initialising draw.legend node.\.\. 
-   | 2022-03-02 18:42:53 peekingduck.declarative_loader  INFO:  Initialising output.screen node.\.\. 
+   | 2022-03-02 18:42:53 peekingduck.declarative_loader  INFO:  Initializing custom_nodes.dabble.debug node.\.\. 
+   | 2022-03-02 18:42:53 peekingduck.declarative_loader  INFO:  Initializing draw.poses node.\.\. 
+   | 2022-03-02 18:42:53 peekingduck.declarative_loader  INFO:  Initializing draw.legend node.\.\. 
+   | 2022-03-02 18:42:53 peekingduck.declarative_loader  INFO:  Initializing output.screen node.\.\. 
    | 2022-03-02 18:42:55 custom_nodes.dabble.debug  INFO:  -- debug -- 
    | 2022-03-02 18:42:55 custom_nodes.dabble.debug  INFO:  input.keys=['img', 'pipeline_end', 'filename', 'saved_video_fps', 'bboxes', 'bbox_labels', 'bbox_scores', 'keypoints', 'keypoint_scores', 'keypoint_conns', 'hand_direction', 'num_waves', 'fps'] 
    | 2022-03-02 18:42:55 custom_nodes.dabble.debug  INFO:  num bboxes=1 
@@ -818,7 +818,7 @@ with PeekingDuck.
 CLI Recipe
 ----------
 
-You skip the step-by-step prompts from :green:`peekingduck create-node` by specifying all the
+You can skip the step-by-step prompts from :green:`peekingduck create-node` by specifying all the
 options on the command line, for instance:
 
 .. admonition:: Terminal Session
@@ -827,7 +827,7 @@ options on the command line, for instance:
 
 The above is the equivalent of the tutorial *Recipe 1: Object Detection Score*
 :ref:`custom node creation <tutorial_wave_project_custom_node>`.
-For more information, see :green:`peekingduck create-node --help`.
+For more information, see :green:`peekingduck create-node -\-help`.
 
 
 Pipeline Recipe
@@ -851,8 +851,8 @@ Starting with the basic folder structure from :green:`peekingduck init`:
       :linenos:
 
       nodes:
-      - input.recorded:
-          input_dir: wave.mp4
+      - input.visual:
+          source: wave.mp4
       - model.yolo
       - model.posenet
       - dabble.fps
@@ -863,11 +863,11 @@ Starting with the basic folder structure from :green:`peekingduck init`:
           show: ["fps"]
       - output.screen
 
-You can tell PeekingDuck to parse your pipeline file with :green:`peekingduck create-node --config_path pipeline_config.yml`:
+You can tell PeekingDuck to parse your pipeline file with :green:`peekingduck create-node -\-config_path pipeline_config.yml`:
 
    .. admonition:: Terminal Session
 
-      | \ :blue:`[~user/wave_project]` \ > \ :green:`peekingduck create-node --config_path pipeline_config.yml` \
+      | \ :blue:`[~user/wave_project]` \ > \ :green:`peekingduck create-node -\-config_path pipeline_config.yml` \
       | 2022-03-14 11:21:21 peekingduck.cli  INFO:  Creating custom nodes declared in ~user/wave_project/pipeline_config.yml. 
       | 2022-03-14 11:21:21 peekingduck.declarative_loader  INFO:  Successfully loaded pipeline file. 
       | 2022-03-14 11:21:21 peekingduck.cli  INFO:  Creating files for custom_nodes.dabble.wave:

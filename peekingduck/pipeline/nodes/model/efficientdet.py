@@ -12,15 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Slower but more accurate object detection model.
-"""
+"""🔲 Scalable and efficient object detection."""
 
 from typing import Any, Dict
 
 import cv2
+import numpy as np
+
 from peekingduck.pipeline.nodes.model.efficientdet_d04 import efficientdet_model
-from peekingduck.pipeline.nodes.node import AbstractNode
+from peekingduck.pipeline.nodes.abstract_node import AbstractNode
 
 
 class Node(AbstractNode):
@@ -30,11 +30,12 @@ class Node(AbstractNode):
     The table of categories can be found
     :ref:`here <general-object-detection-ids>`.
 
-    EfficientDet node has five levels of compound coefficient (0 - 5). A higher
+    EfficientDet node has five levels of compound coefficient (0 - 4). A higher
     compound coefficient will scale up all dimensions of the backbone network
-    width, depth, and input resolution, which results in better performance but
-    slower inference time. The default compound coefficient is 0 and can be
-    changed to other values.
+    width, depth, input resolution, feature network, and box/class prediction
+    at the same time, which results in better performance but slower inference
+    time. The default compound coefficient is 0 and can be changed to other
+    values.
 
     Inputs:
         |img_data|
@@ -50,9 +51,10 @@ class Node(AbstractNode):
         model_type (:obj:`int`): **{0, 1, 2, 3, 4}, default = 0**. |br|
             Defines the compound coefficient for EfficientDet.
         score_threshold (:obj:`float`): **[0, 1], default = 0.3**.
-            Threshold to determine if detection should be returned.
-        detect_ids (:obj:`List[int]`): **default = [0]**. |br|
-            List of object class IDs to be detected. To detect all classes,
+            Bounding boxes with confidence score below the threshold will be
+            discarded.
+        detect (:obj:`List[Union[int, string]]`): **default = [0]**. |br|
+            List of object class names or IDs to be detected. To detect all classes,
             refer to the :ref:`tech note <general-object-detection-ids>`.
         weights_parent_dir (:obj:`Optional[str]`): **default = null**. |br|
             Change the parent directory where weights will be stored by
@@ -73,9 +75,9 @@ class Node(AbstractNode):
         """Takes an image as input and returns bboxes of objects specified
         in config.
         """
+        image = cv2.cvtColor(inputs["img"], cv2.COLOR_BGR2RGB)
+        bboxes, labels, scores = self.model.predict(image)
+        bboxes = np.clip(bboxes, 0, 1)
 
-        img_rgb = cv2.cvtColor(inputs["img"], cv2.COLOR_BGR2RGB)
-
-        bboxes, labels, scores = self.model.predict(img_rgb)
         outputs = {"bboxes": bboxes, "bbox_labels": labels, "bbox_scores": scores}
         return outputs

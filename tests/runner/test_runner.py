@@ -19,7 +19,7 @@ from unittest import mock
 import pytest
 import yaml
 
-from peekingduck.pipeline.nodes.node import AbstractNode
+from peekingduck.pipeline.nodes.abstract_node import AbstractNode
 from peekingduck.runner import Runner
 from peekingduck.utils.requirement_checker import RequirementChecker
 
@@ -35,7 +35,7 @@ PIPELINE_PATH = MODULE_DIR / "pipeline_config.yml"
 CUSTOM_NODES_DIR = MODULE_DIR / "custom_nodes"
 CUSTOM_NODES_CONFIG_DIR = MODULE_DIR / "configs" / PKD_NODE_TYPE
 PKD_NODE_DIR = MODULE_DIR / PKD_NODE_TYPE
-CONFIG_UPDATES_CLI = "{'input.live': {'resize':{'do_resizing':True}}}"
+CONFIG_UPDATES_CLI = "{'input.visual': {'resize':{'do_resizing':True}}}"
 
 
 class MockedNode(AbstractNode):

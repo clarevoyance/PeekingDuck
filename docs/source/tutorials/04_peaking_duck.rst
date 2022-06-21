@@ -4,14 +4,13 @@ Peaking Duck
 
 .. include:: /include/substitution.rst
 
-PeekingDuck include some "power" nodes that are capable of processing the contents 
+PeekingDuck includes some "power" nodes that are capable of processing the contents 
 or outputs of the other nodes and to accumulate information over time.
 An example is the :mod:`dabble.statistics` node which can accumulate statistical 
 information, such as calculating the cumulative average and maximum of particular 
 objects (like people or cars).
 This tutorial presents advanced recipes to showcase the power features of 
 PeekingDuck, such as using :mod:`dabble.statistics` for object counting and tracking.
-
 
 
 .. _tutorial_sql:
@@ -21,7 +20,7 @@ Interfacing with SQL
 
 This tutorial demonstrates how to save data to an SQLite database.
 We will extend the tutorial for :ref:`counting hand waves<tutorial_count_hand_wave>`
-with a new custom :mod:`output` node that writes information into a local sqlite database.
+with a new custom :mod:`output` node that writes information into a local SQLite database.
 
    .. note::
 
@@ -39,7 +38,7 @@ First, create a new custom ``output.sqlite`` node in the ``custom_project`` fold
       | Select node type (input, augment, model, draw, dabble, output): \ :green:`output` \
       | Enter node name [my_custom_node]: \ :green:`sqlite` \
       |
-      | Node directory:	/user/wave_project/src/custom_nodes
+      | Node directory:	~user/wave_project/src/custom_nodes
       | Node type:	output
       | Node name:	sqlite
       |
@@ -103,7 +102,7 @@ Edit the following **five files** as described below:
    
          from typing import Any, Dict
          from datetime import datetime
-         from peekingduck.pipeline.nodes.node import AbstractNode
+         from peekingduck.pipeline.nodes.abstract_node import AbstractNode
          import sqlite3
    
          DB_FILE = "wave.db"           # name of database file
@@ -209,7 +208,7 @@ Edit the following **five files** as described below:
    waves<tutorial_count_hand_wave>` tutorial, except for the changes in the last few
    lines as shown above.
    These changes outputs the ``hand_direction`` and ``num_waves`` to the pipeline's 
-   data pool for subsequent consumption by the new ``output.sqlite`` custom node.
+   data pool for subsequent consumption by the ``output.sqlite`` custom node.
 
 
 #. **pipeline_config.yml**:
@@ -254,10 +253,7 @@ Examine the created database as follows:
       | 2022-02-15 19:26:44|right|72
       | 2022-02-15 19:26:43|right|70
 
-Type :greenbox:`CTRL-D` to exit from ``sqlite3``.
-
-
-
+Press :greenbox:`CTRL-D` to exit from ``sqlite3``.
 
 
 .. _tutorial_counting_cars:
@@ -266,11 +262,11 @@ Counting Cars
 =============
 
 This tutorial demonstrates using the :mod:`dabble.statistics` node to count the number
-of cars travelling across a highway over time and the :mod:`draw.legend` node to display
+of cars traveling across a highway over time and the :mod:`draw.legend` node to display
 the relevant statistics.
 
 Create a new PeekingDuck project, download the `highway cars video
-<http://orchard.dnsalias.com:8100/highway_cars.mp4>`_ and save it into the project
+<https://storage.googleapis.com/peekingduck/videos/highway_cars.mp4>`_ and save it into the project
 folder.
 
    .. admonition:: Terminal Session
@@ -297,10 +293,11 @@ Edit ``pipeline_config.yml`` as follows:
       :linenos:
 
       nodes:
-      - input.recorded:
-          input_dir: highway_cars.mp4
+      - input.visual:
+          source: highway_cars.mp4
       - model.yolo:
-          detect_ids: ["car"]
+          detect: ["car"]
+          score_threshold: 0.3
       - dabble.bbox_count
       - dabble.fps
       - dabble.statistics:
@@ -332,7 +329,6 @@ The sample screenshot below shows:
       https://www.youtube.com/watch?v=8yP1gjg4b2w
 
 
-
 .. _tutorial_object_tracking:
 
 Object Tracking
@@ -341,14 +337,14 @@ Object Tracking
 Object tracking is the application of CV models to automatically detect objects 
 in a video and to assign a unique identity to each of them.
 These objects can be either living (e.g. person) or non-living (e.g. car). 
-Then, as these objects moved around in the video, they are identified based on 
+As they move around in the video, these objects are identified based on 
 their assigned identities and tracked according to their movements.
 
 This tutorial demonstrates using :mod:`dabble.statistics` with a custom node to 
 track the number of people walking down a path.
 
 Create a new PeekingDuck project, download the `people walking video
-<http://orchard.dnsalias.com:8100/people_walking.mp4>`_ and save it into the project
+<https://storage.googleapis.com/peekingduck/videos/people_walking.mp4>`_ and save it into the project
 folder.
 
    .. admonition:: Terminal Session
@@ -363,10 +359,10 @@ Create the following ``pipeline_config.yml``:
       :linenos:
 
       nodes:
-      - input.recorded:
-          input_dir: people_walking.mp4
+      - input.visual:
+          source: people_walking.mp4
       - model.yolo:
-          detect_ids: ["person"]
+          detect: ["person"]
       - dabble.tracking
       - dabble.statistics:
           maximum: obj_attrs["ids"]
@@ -378,7 +374,7 @@ Create the following ``pipeline_config.yml``:
           show: ["fps", "cum_max", "cum_min", "cum_avg"]
       - output.screen
 
-The above pipeline uses the Yolo model to detect people in the video and uses 
+The above pipeline uses the YOLO model to detect people in the video and uses 
 the :mod:`dabble.tracking` node to track the people as they walk.
 Each person is assigned a tracking ID and :mod:`dabble.tracking` returns a list of 
 tracking IDs.
@@ -402,6 +398,7 @@ Do a :greenbox:`peekingduck run` and you will see the following display:
       Royalty free video of people walking from:
       https://www.youtube.com/watch?v=du74nvmRUzo
 
+.. _tutorial_tracking_within_zone:
 
 .. _tutorial_tracking_people_within_zone:
 
@@ -423,7 +420,7 @@ Start by creating a custom node ``dabble.filter_bbox``:
       | Select node type (input, augment, model, draw, dabble, output): \ :green:`dabble` \
       | Enter node name [my_custom_node]: \ :green:`filter_bbox` \
       |
-      | Node directory:	/user/people_walking/src/custom_nodes
+      | Node directory:	~user/people_walking/src/custom_nodes
       | Node type:	dabble
       | Node name:	filter_bbox
       |
@@ -455,10 +452,10 @@ Change ``pipeline_config.yml`` to the following:
       :linenos:
 
       nodes:
-      - input.recorded:
-          input_dir: people_walking.mp4
+      - input.visual:
+          source: people_walking.mp4
       - model.yolo:
-          detect_ids: ["person"]
+          detect: ["person"]
       - dabble.bbox_to_btm_midpoint
       - dabble.zone_count:
           resolution: [720, 480]
@@ -485,7 +482,7 @@ We make use of :mod:`dabble.zone_count` and :mod:`dabble.bbox_to_btm_midpoint` n
 create a zone in the middle. The zone is defined by a rectangle with the 
 four corners (0.35, 0.0) - (0.65, 0.0) - (0.65, 1.0) - (0.35, 1.0).
 (For more info, see :doc:`Zone Counting </use_cases/zone_counting>`)
-This zone is also passed to our custom node ``dabble.filter_bbox`` for bounding box
+This zone is also defined in our custom node ``dabble.filter_bbox`` for bounding box
 filtering.
 What ``dabble.filter_bbox`` will do is to take the list of bboxes as input and 
 output a list of bboxes within the zone, dropping all bboxes outside it.
@@ -497,7 +494,7 @@ walking in the zone currently.
 
 The ``filter_bbox.yml`` and ``filter_bbox.py`` files are shown below:
 
-**src/custom_nodes/configs/dabble/filter_bbox.yml**:
+#. **src/custom_nodes/configs/dabble/filter_bbox.yml**:
 
    .. code-block:: yaml
       :linenos:
@@ -517,7 +514,7 @@ The ``filter_bbox.yml`` and ``filter_bbox.py`` files are shown below:
       See :ref:`Configuration - Behind The Scenes<tutorial_behind_the_scenes>` for more
       details.
 
-**src/custom_nodes/dabble/filter_bbox.py**:
+#. **src/custom_nodes/dabble/filter_bbox.py**:
 
    .. container:: toggle
 
@@ -534,7 +531,7 @@ The ``filter_bbox.yml`` and ``filter_bbox.py`` files are shown below:
 
          from typing import Any, Dict
          import numpy as np
-         from peekingduck.pipeline.nodes.node import AbstractNode
+         from peekingduck.pipeline.nodes.abstract_node import AbstractNode
 
 
          class Node(AbstractNode):

@@ -23,7 +23,7 @@ from typing import Any, Dict, Optional
 import cv2
 import numpy as np
 
-from peekingduck.pipeline.nodes.node import AbstractNode
+from peekingduck.pipeline.nodes.abstract_node import AbstractNode
 
 # role of this node is to be able to take in multiple frames, stitch them
 # together and output them.
@@ -33,7 +33,8 @@ from peekingduck.pipeline.nodes.node import AbstractNode
 
 
 class Node(AbstractNode):
-    """Outputs the processed image or video to a file.
+    """Outputs the processed image or video to a file. A timestamp is appended to the
+    end of the file name.
 
     Inputs:
         |img_data|
@@ -113,8 +114,8 @@ class Node(AbstractNode):
     def _append_datetime_filename(self, filename: str) -> str:
         self._file_name = filename
         current_time = datetime.datetime.now()
-        # output as '240621-15-09-13'
-        time_str = current_time.strftime("%d%m%y-%H-%M-%S")
+        # output as 'YYYYMMDD_hhmmss'
+        time_str = current_time.strftime("%y%m%d_%H%M%S")
 
         # append timestamp to filename before extension Format: filename_timestamp.extension
         filename_with_timestamp = f"_{time_str}.".join(filename.split(".")[-2:])

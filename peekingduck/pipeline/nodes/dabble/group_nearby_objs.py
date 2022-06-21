@@ -21,7 +21,7 @@ from typing import Any, Dict, List, Tuple
 import numpy as np
 
 from peekingduck.pipeline.nodes.dabble.utils.quick_find import QuickFind
-from peekingduck.pipeline.nodes.node import AbstractNode
+from peekingduck.pipeline.nodes.abstract_node import AbstractNode
 
 
 class Node(AbstractNode):
@@ -36,6 +36,7 @@ class Node(AbstractNode):
 
     Outputs:
         |obj_attrs_data|
+        :mod:`dabble.group_nearby_objs` produces the ``groups`` attribute.
 
     Configs:
         obj_dist_threshold (:obj:`float`): **default = 1.5**. |br|

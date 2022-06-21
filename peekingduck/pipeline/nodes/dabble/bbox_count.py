@@ -12,17 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Counts the number of detected boxes.
-"""
+"""Counts the number of detected boxes."""
 
 from typing import Any, Dict
 
-from peekingduck.pipeline.nodes.node import AbstractNode
+from peekingduck.pipeline.nodes.abstract_node import AbstractNode
 
 
 class Node(AbstractNode):
-    """Counts total number of detected objects.
+    """Counts the total number of detected objects.
 
     Inputs:
         |bboxes_data|

@@ -12,15 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Slower but more accurate Pose Estimation model. Requires an object detector.
+"""🕺 High-Resolution Network: Deep high-resolution representation learning for
+human pose estimation. Requires an object detector.
 """
 
 
 from typing import Any, Dict
 
+from peekingduck.pipeline.nodes.abstract_node import AbstractNode
 from peekingduck.pipeline.nodes.model.hrnetv1 import hrnet_model
-from peekingduck.pipeline.nodes.node import AbstractNode
 
 
 class Node(AbstractNode):
@@ -32,8 +32,8 @@ class Node(AbstractNode):
     called HRNetV1.
 
     The HRNet node is capable of detecting single human figures simultaneously
-    per inference and for each detected human figure, 17 keypoints are
-    estimated. The keypoint indices table can be found
+    per inference, with 17 keypoints estimated for each detected human figure.
+    The keypoint indices table can be found
     :ref:`here <whole-body-keypoint-ids>`.
 
     Inputs:
@@ -57,9 +57,6 @@ class Node(AbstractNode):
             Resolution of input array to HRNet model.
         score_threshold (:obj:`float`): **[0, 1], default = 0.1**. |br|
             Threshold to determine if detection should be returned
-        model_nodes (:obj:`Dict`):
-            **default = { inputs: [x:0], outputs: [Identity:0] }** |br|
-            Names of input and output nodes from model graph for prediction.
 
     References:
         Deep High-Resolution Representation Learning for Visual Recognition:

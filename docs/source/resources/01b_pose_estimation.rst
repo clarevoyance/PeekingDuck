@@ -58,7 +58,7 @@ Test Conditions
 ^^^^^^^^^^^^^^^
 
 The following test conditions were followed:
- | - :mod:`input.recorded`, the model of interest, and :mod:`dabble.fps` nodes were used to perform
+ | - :mod:`input.visual`, the model of interest, and :mod:`dabble.fps` nodes were used to perform
      inference on videos
  | - 2 videos were used to benchmark each model, one with only 1 human (``single``), and the other
      with multiple humans (``multiple``)
@@ -66,7 +66,6 @@ The following test conditions were followed:
      frames to process per video
  | - 1280×720 (HD ready) resolution was used, as a bridge between 640×480 (VGA) of poorer quality
      webcams, and 1920×1080 (Full HD) of CCTVs
- | - All tests were performed in a containerized environment running on Google Cloud VMs
 
 Model Accuracy
 --------------
@@ -99,7 +98,7 @@ Dataset
 
 The `MS COCO <https://cocodataset.org/#download>`__ (val 2017) dataset is used. We integrated the
 COCO API into the PeekingDuck pipeline for loading the annotations and evaluating the outputs from
-the models. All values are reported in percentage.
+the models. All values are reported in percentages.
 
 All images from the "person" category in the MS COCO (val 2017) dataset were processed.
 
@@ -129,7 +128,7 @@ Whole Body
 +----------------+----+-------------+----+
 | right eye      | 2  | left hip    | 11 |
 +----------------+----+-------------+----+
-| leftEar        | 3  | right hip   | 12 |
+| left ear       | 3  | right hip   | 12 |
 +----------------+----+-------------+----+
 | right ear      | 4  | left knee   | 13 |
 +----------------+----+-------------+----+

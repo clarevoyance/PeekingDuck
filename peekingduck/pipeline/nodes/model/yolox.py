@@ -12,12 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""High performance anchor-free YOLO object detection model"""
+"""🔲 High performance anchor-free YOLO object detection model."""
 
 from typing import Any, Dict
 
+import numpy as np
+
 from peekingduck.pipeline.nodes.model.yoloxv1 import yolox_model
-from peekingduck.pipeline.nodes.node import AbstractNode
+from peekingduck.pipeline.nodes.abstract_node import AbstractNode
 
 
 class Node(AbstractNode):  # pylint: disable=too-few-public-methods
@@ -48,8 +50,8 @@ class Node(AbstractNode):  # pylint: disable=too-few-public-methods
             replacing ``null`` with an absolute path to the desired directory.
         input_size (:obj:`int`): **default=416**. |br|
             Input image resolution of the YOLOX model.
-        detect_ids (:obj:`List[int]`): **default=[0]**. |br|
-            List of object category IDs to be detected. To detect all classes,
+        detect (:obj:`List[Union[int, string]]`): **default=[0]**. |br|
+            List of object class names or IDs to be detected. To detect all classes,
             refer to the :ref:`tech note <general-object-detection-ids>`.
         iou_threshold (:obj:`float`): **[0, 1], default = 0.45**. |br|
             Overlapping bounding boxes with Intersection over Union (IoU) above
@@ -58,8 +60,8 @@ class Node(AbstractNode):  # pylint: disable=too-few-public-methods
             Bounding boxes with confidence score (product of objectness score
             and classification score) below the threshold will be discarded.
         agnostic_nms (:obj:`bool`): **default = True**. |br|
-            Flag to determine if class agnostic NMS (``torchvision.ops.nms``)
-            or class aware NMS (``torchvision.ops.batched_nms``) should be
+            Flag to determine if class-agnostic NMS (``torchvision.ops.nms``)
+            or class-aware NMS (``torchvision.ops.batched_nms``) should be
             used.
         half (:obj:`bool`): **default = False**. |br|
             Flag to determine if half-precision floating-point should be used
@@ -85,7 +87,7 @@ class Node(AbstractNode):  # pylint: disable=too-few-public-methods
         objects.
 
         The classes of objects to be detected can be specified through the
-        `detect_ids` configuration option.
+        `detect` configuration option.
 
         Args:
             inputs (Dict): Inputs dictionary with the key `img`.
@@ -95,6 +97,8 @@ class Node(AbstractNode):  # pylint: disable=too-few-public-methods
                 and `bbox_scores`.
         """
         bboxes, labels, scores = self.model.predict(inputs["img"])
+        bboxes = np.clip(bboxes, 0, 1)
+
         outputs = {"bboxes": bboxes, "bbox_labels": labels, "bbox_scores": scores}
 
         return outputs

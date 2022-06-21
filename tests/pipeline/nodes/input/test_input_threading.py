@@ -24,7 +24,15 @@ PKD_ROOT_DIR = Path(__file__).parents[4]  # dependent on __file__ location
 PKD_PIPELINE_ORIG_PATH = PKD_ROOT_DIR / "pipeline_config.yml"
 PKD_PIPELINE_BAK_PATH = PKD_ROOT_DIR / "pipeline_config_orig.yml"
 PKD_RUN_DIR = Path(__file__).parents[5]  # dependent on __file__ location
-RTSP_URL = "http://takemotopiano.aa1.netvolante.jp:8190/nphMotionJpeg?Resolution=640x480&Quality=Standard&Framerate=30"
+# collect list of public RTSP URLs
+RTSP_URL_GERMANY = (
+    "http://clausenrc5.viewnetcam.com:50003/nphMotionJpeg?Resolution=320x240"
+)
+RTSP_URL_JAPAN_1 = "http://takemotopiano.aa1.netvolante.jp:8190/nphMotionJpeg?Resolution=640x480&Quality=Standard&Framerate=30"
+RTSP_URL_JAPAN_2 = (
+    "http://honjin1.miemasu.net/nphMotionJpeg?Resolution=640x480&Quality=Standard"
+)
+URL_LIST = [RTSP_URL_JAPAN_1, RTSP_URL_JAPAN_2, RTSP_URL_GERMANY]
 
 # Helper Functions
 def get_fps_number(avg_fps_msg: str) -> float:
@@ -69,9 +77,9 @@ def test_input_threading():
     This test will do the following:
     1. Backup original pipeline_config.yml in Peeking Duck directory
     2. Run input live test 1 without threading with custom pipeline_config.yml file
-       The test comprises input.live, model.yolo and dabble.fps
+       The test comprises input.visual, model.yolo and dabble.fps
     3. Run input live test 2 with threading with custom pipeline_config.yml file
-       The test comprises input.live, model.yolo and dabble.fps
+       The test comprises input.visual, model.yolo and dabble.fps
     4. Restore original pipeline_config.yml
     5. Check average FPS from 2 is higher than 1
     """
@@ -91,8 +99,8 @@ def test_input_threading():
         nodes = {
             "nodes": [
                 {
-                    "input.live": {
-                        "input_source": url,
+                    "input.visual": {
+                        "source": url,
                         "threading": threading,
                     }
                 },
@@ -132,14 +140,18 @@ def test_input_threading():
 
         return avg_fps
 
-    res = False
-    with run_pipeline_yml():
+    def run_url_test(the_url: str) -> bool:
+        print(f"url={the_url}")
         print("Run test without threading")
-        avg_fps_1 = run_rtsp_test(url=RTSP_URL, threading=False)
-
+        avg_fps_1 = run_rtsp_test(url=the_url, threading=False)
         print("Run test with threading")
-        avg_fps_2 = run_rtsp_test(url=RTSP_URL, threading=True)
-
+        avg_fps_2 = run_rtsp_test(url=the_url, threading=True)
+        # check outcome
         res = avg_fps_2 > avg_fps_1
         print(f"avg_fps_1={avg_fps_1}, avg_fps_2={avg_fps_2}, res={res}")
-    assert res
+        return res
+
+    with run_pipeline_yml():
+        results = [run_url_test(url) for url in URL_LIST]
+        print(f"results={results}")
+        assert any(results)

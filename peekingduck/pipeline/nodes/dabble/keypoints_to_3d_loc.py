@@ -13,14 +13,14 @@
 # limitations under the License.
 
 """
-Estimates the 3D coordinates of a human given 2D pose coordinates.
+Estimates the 3D coordinates of a person given 2D pose coordinates.
 """
 
 from typing import Any, Dict
 
 import numpy as np
 
-from peekingduck.pipeline.nodes.node import AbstractNode
+from peekingduck.pipeline.nodes.abstract_node import AbstractNode
 
 NOSE = 0
 LEFT_SHOULDER = 5
@@ -31,7 +31,7 @@ TORSO_KEYPOINTS = [NOSE, LEFT_SHOULDER, RIGHT_SHOULDER, LEFT_PELVIS, RIGHT_PELVI
 
 
 class Node(AbstractNode):
-    """Uses pose keypoint information of torso to estimate 3D location.
+    """Uses pose keypoint information of the torso to estimate 3D location.
 
     Inputs:
         |keypoints_data|

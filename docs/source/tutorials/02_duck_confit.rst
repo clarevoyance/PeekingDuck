@@ -47,18 +47,18 @@ To perform object detection on the ``cat_and_computer.mp4`` file, edit the
    :linenos:
 
    nodes:
-   - input.recorded:
-       input_dir: cat_and_computer.mp4
+   - input.visual:
+       source: cat_and_computer.mp4
    - model.yolo:
-       detect_ids: ["cup", "cat", "laptop", "keyboard", "mouse"]
+       detect: ["cup", "cat", "laptop", "keyboard", "mouse"]
    - draw.bbox:
        show_labels: True    # configure draw.bbox to display object labels
    - output.screen
 
 Here is a step-by-step explanation of what has been done:
 
-   | Line 2 :mod:`input.recorded`: tells PeekingDuck to load the ``cat_and_computer.mp4``.
-   | Line 4 :mod:`model.yolo`: by default, the Yolo model detects ``person`` only.
+   | Line 2 :mod:`input.visual`: tells PeekingDuck to load the ``cat_and_computer.mp4``.
+   | Line 4 :mod:`model.yolo`: by default, the YOLO model detects ``person`` only.
    |        The ``cat_and_computer.mp4`` contains other classes of objects like cup, cat, laptop, etc. 
    |        So we have to change the model settings to detect the other object classes.
    | Line 6 :mod:`draw.bbox`: reconfigure this node to display the detected object class label.
@@ -77,8 +77,10 @@ The 30-second video will auto-close at the end, or you can press :greenbox:`q` t
 
     .. note::
 
-       The Yolo model can detect 80 different :ref:`object classes
-       <general-object-detection-ids>`.
+       The YOLO model can detect 80 different :ref:`object classes
+       <general-object-detection-ids>`. By default, it only detects the ``"person"`` class. Use
+       ``detect: ["*"]`` in the ``pipeline_config.yml`` to configure the model to detect all 80
+       classes.
 
 
 .. _tutorial_media_writer:
@@ -96,10 +98,10 @@ Edit ``pipeline_config.yml`` as shown below:
    :linenos:
 
    nodes:
-   - input.recorded:
-       input_dir: cat_and_computer.mp4
+   - input.visual:
+       source: cat_and_computer.mp4
    - model.yolo:
-       detect_ids: ["cup", "cat", "laptop", "keyboard", "mouse"]
+       detect: ["cup", "cat", "laptop", "keyboard", "mouse"]
    - draw.bbox:
        show_labels: True
    - dabble.fps                           # add new dabble node
@@ -146,12 +148,15 @@ For instance, :mod:`draw.bbox` default configuration is:
 
    show_labels: False
 
+| The keys ``input`` and ``output`` are compulsory and common across every node.
+| ``input`` specifies the data types the node would consume, to be read from the pipeline.
+| ``output`` specifies the data types the node would produce, to be put into the pipeline.
+
 By default, ``show_labels`` is disabled.
-When you enable it on with ``show_labels: True``, what PeekingDuck does is to override
+When you enable it with ``show_labels: True``, what PeekingDuck does is to override
 the default ``show_labels: False`` configuration with your specified ``True`` value.
 You will see another instance of this at work in the advanced *Peaking Duck* tutorial on
 :ref:`Tracking People Within a Zone <tutorial_tracking_people_within_zone>`.
-
 
 
 .. _tutorial_augment:
@@ -170,8 +175,8 @@ within the pipeline:
    :linenos:
 
    nodes:
-   - input.recorded:
-       input_dir: "data/verification/wave.mp4"
+   - input.visual:
+       source: https://storage.googleapis.com/peekingduck/videos/wave.mp4
    - model.yolo
    - augment.brightness:
        beta: 50         # ranges from -100 (darken) to +100 (brighten)

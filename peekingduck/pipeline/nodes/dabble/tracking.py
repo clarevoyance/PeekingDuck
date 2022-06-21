@@ -12,19 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Performs multiple object tracking for detected bboxes."""
+"""🎯 Performs multiple object tracking for detected bboxes."""
 
 from typing import Any, Dict
 
 from peekingduck.pipeline.nodes.dabble.trackingv1.detection_tracker import (
     DetectionTracker,
 )
-from peekingduck.pipeline.nodes.node import AbstractNode
+from peekingduck.pipeline.nodes.abstract_node import AbstractNode
 
 
 class Node(AbstractNode):
     """Uses bounding boxes detected by an object detector model to track
-    multiple objects.
+    multiple objects. :mod:`dabble.tracking` is a useful alternative to
+    :mod:`model.fairmot` and :mod:`model.jde` as it can track bounding boxes
+    detected by the upstream object detector and is not limited to only
+    ``"person"`` detections.
 
     Currently, two types of tracking algorithms can be selected: MOSSE and IOU.
     Information on the algorithms' performance can be found
@@ -37,12 +40,15 @@ class Node(AbstractNode):
 
     Outputs:
         |obj_attrs_data|
+        :mod:`dabble.tracking` produces the ``ids`` attribute which contains
+        the tracking IDs of the detections.
+
 
     Configs:
         tracking_type (:obj:`str`): **{"iou", "mosse"}, default="iou"**. |br|
             Type of tracking algorithm to be used. For more information about
-            the trackers, please view the :doc:`Multiple Object Tracking use
-            case </use_cases/multiple_object_tracking>`.
+            the trackers, please view the :doc:`Object Counting (Over Time) use
+            case </use_cases/object_counting_over_time>`.
         iou_threshold (:obj:`float`): **[0, 1], default=0.1**. |br|
             Minimum IoU value to be used with the matching logic.
         max_lost (:obj:`int`): **[0, sys.maxsize), default=10**. |br|

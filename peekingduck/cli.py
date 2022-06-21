@@ -39,6 +39,7 @@ from peekingduck.utils.create_node_helper import (
     get_config_and_script_paths,
     verify_option,
 )
+from peekingduck.utils.deprecation import deprecate
 from peekingduck.utils.logger import LoggerSetup
 
 logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
@@ -75,8 +76,8 @@ def create_pipeline_config_yml(
     if default_nodes is None:
         default_nodes = [
             {
-                "input.live": {
-                    "input_source": "https://storage.googleapis.com/peekingduck/videos/wave.mp4"
+                "input.visual": {
+                    "source": "https://storage.googleapis.com/peekingduck/videos/wave.mp4"
                 }
             },
             "model.posenet",
@@ -173,11 +174,11 @@ def create_node(
         node_subdir = verify_option(node_subdir, value_proc=ensure_relative_path)
         if node_subdir is None:
             node_subdir = click.prompt(
-                f"Enter node directory relative to {project_dir}",
-                default="src/custom_nodes",
+                f"Enter node directory relative to {project_dir}/src",
+                default="custom_nodes",
                 value_proc=ensure_relative_path,
             )
-        node_dir = project_dir / node_subdir
+        node_dir = project_dir / "src" / node_subdir
 
         node_type = verify_option(
             node_type, value_proc=ensure_valid_type_partial(node_type_choices)
@@ -303,6 +304,12 @@ def run(
         if (curr_dir / "pipeline_config.yml").is_file():
             config_path = curr_dir / "pipeline_config.yml"
         elif (curr_dir / "run_config.yml").is_file():
+            deprecate(
+                "using 'run_config.yml' as the default pipeline configuration "
+                "file is deprecated and will be removed in the future. Please "
+                "use 'pipeline_config.yml' instead.",
+                2,
+            )
             config_path = curr_dir / "run_config.yml"
         else:
             config_path = curr_dir / "pipeline_config.yml"
@@ -429,8 +436,8 @@ def _verify_install() -> None:
         create_pipeline_config_yml(
             [
                 {
-                    "input.live": {
-                        "input_source": "https://storage.googleapis.com/peekingduck/videos/wave.mp4"
+                    "input.visual": {
+                        "source": "https://storage.googleapis.com/peekingduck/videos/wave.mp4"
                     }
                 },
                 "model.yolo",

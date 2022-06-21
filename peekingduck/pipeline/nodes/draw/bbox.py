@@ -19,7 +19,7 @@ Draws bounding boxes over detected objects.
 from typing import Any, Dict
 
 from peekingduck.pipeline.nodes.draw.utils.bbox import draw_bboxes
-from peekingduck.pipeline.nodes.node import AbstractNode
+from peekingduck.pipeline.nodes.abstract_node import AbstractNode
 
 
 class Node(AbstractNode):
@@ -27,8 +27,7 @@ class Node(AbstractNode):
 
     The :mod:`draw.bbox` node uses :term:`bboxes` and, optionally,
     :term:`bbox_labels` from the model predictions to draw the bbox predictions
-    onto the image. For better understanding of the use case, refer to the
-    :doc:`Object Counting use case </use_cases/object_counting>`.
+    onto the image.
 
     Inputs:
         |img_data|

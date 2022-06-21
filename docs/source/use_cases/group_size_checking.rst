@@ -13,33 +13,37 @@ malls to ensure that visitors adhere to guidelines, or in workplaces to ensure e
 
 .. image:: /assets/use_cases/group_size_checking.gif
    :class: no-scaled-link
-   :width: 70 %
+   :width: 50 %
 
 
 To check if individuals belong to a group, we check if the physical distance between them is close.
 The most accurate way to measure distance is to use a 3D sensor with depth perception, such as a
-RGB-D camera or a LiDAR. However, most cameras such as CCTVs and IP cameras usually only produce 2D
-videos. We developed heuristics that are able to give an approximate measure of physical distance
-from 2D videos, circumventing this limitation. This is further elaborated in the `How it Works`_ section.
+RGB-D camera or a `LiDAR <https://en.wikipedia.org/wiki/Lidar>`_. However, most cameras such as CCTVs
+and IP cameras usually only produce 2D videos. We developed heuristics that are able to give an
+approximate measure of physical distance from 2D videos, addressing this limitation. This is
+further elaborated in the `How It Works`_ section.
 
 Demo
 ====
 
 .. |pipeline_config| replace:: group_size_checking.yml
-.. _pipeline_config: https://github.com/aimakerspace/PeekingDuck/blob/dev/use_cases/group_size_checking.yml
+.. _pipeline_config: https://github.com/aimakerspace/PeekingDuck/blob/main/use_cases/group_size_checking.yml
 
-To try our solution on your own computer, :doc:`install </getting_started/02_basic_install>` and run
+To try our solution on your own computer, :doc:`install </getting_started/02_standard_install>` and run
 PeekingDuck with the configuration file |pipeline_config|_ as shown:
 
-.. parsed-literal::
+.. admonition:: Terminal Session
 
-    > peekingduck run --config_path <path/to/\ |pipeline_config|\ >
+    | \ :blue:`[~user]` \ > \ :green:`peekingduck run -\-config_path <path/to/`\ |pipeline_config|\ :green:`>`
 
-How it Works
+How It Works
 ============
 
-There are three main components to obtain the distance between individuals: 1) human pose
-estimation using AI; 2) depth and distance approximation; and 3) linking individuals to groups.
+There are three main components to obtain the distance between individuals:
+
+#. Human pose estimation using AI,
+#. Depth and distance approximation, and
+#. Linking individuals to groups.
 
 **1. Human Pose Estimation**
 
@@ -50,7 +54,7 @@ to determine the distance between individuals.
 
 .. image:: /assets/use_cases/posenet_demo.gif
    :class: no-scaled-link
-   :width: 70 %
+   :width: 50 %
 
 **2. Depth and Distance Approximation**
 
@@ -60,7 +64,7 @@ using the relationship below:
 
 .. image:: /assets/use_cases/distance_estimation.png
    :class: no-scaled-link
-   :width: 70 %
+   :width: 50 %
 
 where:
 
@@ -90,7 +94,8 @@ These are the nodes used in the earlier demo (also in |pipeline_config|_):
 .. code-block:: yaml
 
    nodes:
-   - input.live
+   - input.visual:
+       source: 0
    - model.posenet
    - dabble.keypoints_to_3d_loc:
        focal_length: 1.14
@@ -99,10 +104,8 @@ These are the nodes used in the earlier demo (also in |pipeline_config|_):
        obj_dist_threshold: 1.5
    - dabble.check_large_groups:
        group_size_threshold: 2
-   - dabble.fps
    - draw.poses
    - draw.group_bbox_and_tag
-   - draw.legend
    - output.screen
 
 
@@ -110,8 +113,8 @@ These are the nodes used in the earlier demo (also in |pipeline_config|_):
 
 By default, we are using the PoseNet model with a ResNet backbone for pose estimation. Please take
 a look at the :doc:`benchmarks </resources/01b_pose_estimation>` of pose estimation models that are
-included in PeekingDuck if you would like to use a different model variation or an alternative
-model better suited to your use case.
+included in PeekingDuck if you would like to use a different model or model type better suited to
+your use case.
 
 **2. Adjusting Nodes**
 
@@ -120,7 +123,7 @@ Some common node behaviors that you might need to adjust are:
 * ``focal_length`` & ``torso_factor``: We calibrated these settings using a Logitech c170 webcam,
   with 2 individuals of heights about 1.7m. We recommend running a few experiments on your setup
   and calibrate these accordingly.
-* ``obj_dist_threshold``: The maximum distance between 2 individuals, in metres, before they are
+* ``obj_dist_threshold``: The maximum distance between 2 individuals, in meters, for them to be
   considered to be part of a group.
 * ``group_size_threshold``: The acceptable group size limit.
 
@@ -128,10 +131,10 @@ For more adjustable node behaviors not listed here, check out the :ref:`API Docu
 
 **3. Using Object Detection (Optional)**
 
-It is possible to use object detection nodes such as :mod:`model.yolo` instead of pose estimation.
-To do so, replace the model node accordingly, and replace the node :mod:`dabble.keypoints_to_3d_loc`
-with :mod:`dabble.bbox_to_3d_loc`. The reference or "ground truth length" in this case would be the
-average height of a human, multiplied by a small factor.
+It is possible to use :doc:`object detection models </resources/01a_object_detection>` instead of
+pose estimation. To do so, replace the model node accordingly, and replace the node 
+:mod:`dabble.keypoints_to_3d_loc` with :mod:`dabble.bbox_to_3d_loc`. The reference or "ground truth
+length" in this case would be the average height of a human, multiplied by a small factor.
 
 You might need to use this approach if running on a resource-limited device such as a Raspberry Pi.
 In this situation, you'll need to use the lightweight models; we find lightweight object detectors
